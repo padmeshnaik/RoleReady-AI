@@ -23,6 +23,39 @@ DEFAULT_SKILLS = [
     "machine learning",
 ]
 
+_DISPLAY_LABELS = {
+    "ai_engineer": "AI Engineer",
+    "machine_learning_engineer": "Machine Learning Engineer",
+    "software_engineer": "Software Engineer",
+    "backend_engineer": "Backend Engineer",
+    "data_engineer": "Data Engineer",
+    "system_design": "System Design",
+    "technical": "Technical",
+    "behavioral": "Behavioral",
+    "coding": "Coding",
+    "junior": "Junior",
+    "mid": "Mid",
+    "senior": "Senior",
+}
+
+_TOKEN_LABELS = {
+    "ai": "AI",
+    "ml": "ML",
+}
+
+
+def display_label(value: str) -> str:
+    """Show Title Case labels in the UI. Stored values stay snake_case for retrieval."""
+    if not value:
+        return value
+    known = _DISPLAY_LABELS.get(value)
+    if known is not None:
+        return known
+    if "_" not in value and "-" not in value:
+        return value
+    parts = value.replace("-", "_").split("_")
+    return " ".join(_TOKEN_LABELS.get(part.lower(), part.capitalize()) for part in parts if part)
+
 
 def unique_sorted(values: Sequence[str]) -> list[str]:
     return sorted({value for value in values if value})
@@ -113,13 +146,18 @@ def render_setup_form(choices: dict[str, list[str]]) -> None:
     st.caption("Mock interview practice with retrieval-backed questions.")
     st.text_input("Candidate Name", key="candidate_name")
     st.selectbox("Company", choices["companies"], key="setup_company")
-    st.selectbox("Role / Position", choices["roles"], key="setup_role")
-    st.selectbox("Seniority", choices["seniorities"], key="setup_seniority")
+    st.selectbox("Role / Position", choices["roles"], format_func=display_label, key="setup_role")
+    st.selectbox("Seniority", choices["seniorities"], format_func=display_label, key="setup_seniority")
     st.multiselect("Skills", DEFAULT_SKILLS, default=["Python"], key="setup_skills")
     extra = st.text_input("Additional skills (comma-separated)", key="setup_skills_extra")
     if extra.strip():
         st.caption("Extra skills will be included when you start.")
-    st.selectbox("Interview Category", choices["categories"], key="setup_category")
+    st.selectbox(
+        "Interview Category",
+        choices["categories"],
+        format_func=display_label,
+        key="setup_category",
+    )
 
 
 def collected_skills() -> list[str]:

@@ -23,6 +23,7 @@ from roleready.session.models import SessionStatus
 from roleready.ui.components import (
     collected_skills,
     current_question_number,
+    display_label,
     render_answer_form,
     render_chat,
     render_final_report,
@@ -165,7 +166,8 @@ def _render_interview(app: InterviewApp) -> None:
 
     st.title("RoleReady AI")
     st.caption(
-        f"{name} · {session.company} · {session.role} · {session.seniority} · {session.category}"
+        f"{name} · {session.company} · {display_label(session.role)} · "
+        f"{display_label(session.seniority)} · {display_label(session.category)}"
     )
     review_index = st.session_state.get("review_turn_index")
     number = current_question_number(session, review_index, question_count)

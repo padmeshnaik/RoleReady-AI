@@ -2,6 +2,7 @@ from roleready.db.models import GENERIC_COMPANY
 from roleready.llm.schemas import FinalEvaluationResult
 from roleready.session.models import ChatMessage, InterviewSession, InterviewTurn, Score
 from roleready.ui.components import (
+    display_label,
     parse_final_report,
     score_dimension_averages,
     setup_choices,
@@ -21,6 +22,16 @@ def test_setup_choices_includes_generic_and_bank_values() -> None:
     assert "Google" in choices["companies"]
     assert "data_engineer" in choices["roles"]
     assert "system_design" in choices["categories"]
+
+
+def test_display_label_uses_readable_title_case() -> None:
+    assert display_label("ai_engineer") == "AI Engineer"
+    assert display_label("machine_learning_engineer") == "Machine Learning Engineer"
+    assert display_label("software_engineer") == "Software Engineer"
+    assert display_label("system_design") == "System Design"
+    assert display_label("mid") == "Mid"
+    assert display_label("Google") == "Google"
+    assert display_label("Generic") == "Generic"
 
 
 def test_parse_final_report_json() -> None:
