@@ -56,3 +56,11 @@ def test_interview_question_count_rejects_zero() -> None:
     with pytest.raises(ValidationError) as exc_info:
         Settings(_env_file=None, **_valid_kwargs(interview_question_count=0))
     assert "interview_question_count" in str(exc_info.value)
+
+
+def test_default_env_file_is_repository_root() -> None:
+    from roleready.config.settings import DEFAULT_ENV_FILE, REPO_ROOT
+
+    assert DEFAULT_ENV_FILE == REPO_ROOT / ".env"
+    assert (REPO_ROOT / "src" / "roleready" / "config" / "settings.py").is_file()
+

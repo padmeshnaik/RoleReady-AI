@@ -1,12 +1,19 @@
 """Application settings loaded from environment variables and a local .env file.
 
 Secrets are never hardcoded. Copy .env.example to .env and set required values.
+The .env path is the repository root so Streamlit still finds it when the
+working directory is the app file folder.
 """
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# src/roleready/config/settings.py -> repository root
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_ENV_FILE = REPO_ROOT / ".env"
 
 _ENV_NAMES = {
     "openai_api_key": "OPENAI_API_KEY",
@@ -40,7 +47,7 @@ class Settings(BaseSettings):
     """Typed configuration. Instantiation fails with ValidationError if required values are missing."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=DEFAULT_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
         case_sensitive=False,
