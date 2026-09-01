@@ -1,5 +1,6 @@
 """SQLite question-bank tests. Always use a temporary database, never data/roleready.db."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -15,6 +16,7 @@ from roleready.db.sqlite import (
     filter_with_generic_fallback,
     get_question_by_id,
     insert_questions,
+    seed_from_jsonl,
     unused_questions_with_generic_fallback,
 )
 
@@ -250,3 +252,101 @@ def test_unused_questions_relax_filters_when_exact_combo_missing(conn) -> None:
         used_ids=[],
     )
     assert [q.id for q in results] == ["google-se"]
+
+
+def _jsonl_record(**overrides: object) -> dict:
+    record: dict = {
+        "id": "gq-seed-1",
+        "company": "Generic",
+        "role": "software_engineer",
+        "seniority": "mid",
+        "category": "technical",
+        "difficulty": 3,
+        "question_text": "Describe how you would design a cache for a high-traffic API.",
+        "rubric": (
+            "A strong answer names eviction policy, TTL, stampede control, "
+            "and consistency with the source of truth under failure."
+        ),
+        "follow_up_hints": "What happens if the cache is unavailable?",
+    }
+    record.update(overrides)
+    return record
+
+
+def _write_jsonl(path: Path, records: list[object]) -> None:
+    path.write_text(
+        "".join(
+            (row if isinstance(row, str) else json.dumps(row)) + "\n" for row in records
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_seed_from_jsonl_inserts_validated_fields(conn, tmp_path: Path) -> None:
+    jsonl_path = tmp_path / "questions_clean.jsonl"
+    record = _jsonl_record(category="coding", role="backend_engineer")
+    _write_jsonl(jsonl_path, [record])
+
+    summary = seed_from_jsonl(conn, jsonl_path)
+
+    assert summary.records_read == 1
+    assert summary.inserted == 1
+    assert summary.skipped == 0
+    assert summary.failed == 0
+    stored = get_question_by_id(conn, "gq-seed-1")
+    assert stored is not None
+    assert stored.company == "Generic"
+    assert stored.role == "backend_engineer"
+    assert stored.seniority == "mid"
+    assert stored.category == "coding"
+    assert stored.difficulty == 3
+    assert stored.question_text == record["question_text"]
+    assert stored.rubric == record["rubric"]
+    assert stored.follow_up_hints == record["follow_up_hints"]
+
+
+def test_seed_from_jsonl_is_idempotent_and_skips_duplicate_ids(conn, tmp_path: Path) -> None:
+    jsonl_path = tmp_path / "questions_clean.jsonl"
+    _write_jsonl(
+        jsonl_path,
+        [
+            _jsonl_record(id="gq-dup-1"),
+            _jsonl_record(id="gq-dup-1", question_text="A different prompt that is still long enough."),
+        ],
+    )
+
+    first = seed_from_jsonl(conn, jsonl_path)
+    assert first.inserted == 1
+    assert first.skipped == 1
+    assert first.failed == 0
+
+    second = seed_from_jsonl(conn, jsonl_path)
+    assert second.records_read == 2
+    assert second.inserted == 0
+    assert second.skipped == 2
+    assert second.failed == 0
+    count = conn.execute("SELECT COUNT(*) AS n FROM questions;").fetchone()["n"]
+    assert count == 1
+    stored = get_question_by_id(conn, "gq-dup-1")
+    assert stored is not None
+    assert "cache" in stored.question_text
+
+
+def test_seed_from_jsonl_counts_invalid_records_as_failed(conn, tmp_path: Path) -> None:
+    jsonl_path = tmp_path / "questions_clean.jsonl"
+    _write_jsonl(
+        jsonl_path,
+        [
+            _jsonl_record(id="gq-ok"),
+            "{not json",
+            _jsonl_record(id="gq-bad", difficulty=9),
+        ],
+    )
+
+    summary = seed_from_jsonl(conn, jsonl_path)
+    assert summary.records_read == 3
+    assert summary.inserted == 1
+    assert summary.skipped == 0
+    assert summary.failed == 2
+    assert get_question_by_id(conn, "gq-ok") is not None
+    assert get_question_by_id(conn, "gq-bad") is None

@@ -22,6 +22,9 @@ build/
 *.sqlite
 *.sqlite3
 
+# Regenerable embedding cache for semantic dedupe (not Pinecone)
+data/question_text_embeddings.json
+
 # Test / type / coverage caches
 .pytest_cache/
 .mypy_cache/

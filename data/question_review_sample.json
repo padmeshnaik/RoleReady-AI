@@ -1,0 +1,252 @@
+[
+  {
+    "company": "Generic",
+    "role": "backend_engineer",
+    "seniority": "junior",
+    "category": "coding",
+    "difficulty": 2,
+    "question_text": "Write a function that takes a list of integers and returns a new list containing only the even numbers. Make sure your solution is efficient.",
+    "rubric": "1. Correctly filters even numbers\n2. Maintains the order of elements\n3. Uses an efficient iteration method\n4. Handles empty lists gracefully\n5. Demonstrates clean and readable code",
+    "follow_up_hints": "How would your solution change if the list was extremely large?"
+  },
+  {
+    "company": "Generic",
+    "role": "data_engineer",
+    "seniority": "mid",
+    "category": "system_design",
+    "difficulty": 3,
+    "question_text": "Outline a data architecture for a real-time analytics platform that ingests data from multiple sources, processes it, and makes it available for dashboards. Include components for data ingestion, storage, and processing.",
+    "rubric": "Identifies data ingestion tools (e.g., Kafka, Flink); Describes data storage options (e.g., data lake, warehouse); Explains real-time processing components; Addresses schema management and data quality; Considers scalability and fault tolerance; Mentions data access for dashboards.",
+    "follow_up_hints": "How would you handle late-arriving data in this architecture?"
+  },
+  {
+    "company": "Google",
+    "role": "software_engineer",
+    "seniority": "junior",
+    "category": "coding",
+    "difficulty": 2,
+    "question_text": "Write a function that takes a list of integers and returns the list sorted in ascending order. Explain your choice of sorting algorithm.",
+    "rubric": "A correct implementation of a sorting algorithm (e.g., built-in sort or a simple algorithm like insertion sort) is expected. The explanation should include reasons for choosing the algorithm, considering factors such as simplicity, efficiency, or stability. For a junior level, a straightforward approach with an explanation suffices.",
+    "follow_up_hints": "How would your approach change if the list were very large or mostly sorted?"
+  },
+  {
+    "company": "Google",
+    "role": "backend_engineer",
+    "seniority": "senior",
+    "category": "system_design",
+    "difficulty": 5,
+    "question_text": "Design an architecture for a globally distributed, low-latency chat application supporting billions of users. Address data consistency, message delivery guarantees, and fault tolerance.",
+    "rubric": "Proposes a geo-distributed architecture with regional data centers\nUses replication and sharding to handle scale and data locality\nImplements message queuing and delivery guarantees (e.g., at-least-once, idempotency)\nAddresses consistency models and conflict resolution strategies\nIncludes strategies for high availability, disaster recovery, and data privacy considerations",
+    "follow_up_hints": "How would you handle message ordering and conflict resolution across regions?"
+  },
+  {
+    "company": "Amazon",
+    "role": "software_engineer",
+    "seniority": "senior",
+    "category": "system_design",
+    "difficulty": 5,
+    "question_text": "Design an end-to-end scalable system for a global, low-latency online multiplayer game platform that supports millions of concurrent users, ensuring consistency, fairness, and fault tolerance.",
+    "rubric": "Addresses game state synchronization and consistency; discusses scalable architecture and load balancing; considers latency and geographic distribution; handles fault tolerance and data durability; includes security and cheat prevention strategies.",
+    "follow_up_hints": "How would you handle network latency variations across regions?"
+  },
+  {
+    "company": "Google",
+    "role": "software_engineer",
+    "seniority": "mid",
+    "category": "system_design",
+    "difficulty": 4,
+    "question_text": "Design a real-time notification system that scales to millions of users with low latency. Address message delivery guarantees, system architecture, and fault tolerance.",
+    "rubric": "Defines scalable ingestion and distribution architecture; Implements reliable message delivery strategies; Handles system failures and retries; Addresses user personalization and segmentation; Considers latency and throughput trade-offs; Plans for monitoring and alerting.",
+    "follow_up_hints": "How would you ensure message ordering and consistency?"
+  },
+  {
+    "company": "Meta",
+    "role": "backend_engineer",
+    "seniority": "senior",
+    "category": "system_design",
+    "difficulty": 5,
+    "question_text": "Design a distributed notification system capable of delivering billions of notifications daily with low latency. Address data consistency, fault tolerance, scaling, and real-time delivery guarantees.",
+    "rubric": "System architecture design including data storage and message queuing; Handling of data consistency and eventual consistency models; Fault tolerance mechanisms; Scalability strategies; Latency optimization; Consideration of failure modes and recovery.",
+    "follow_up_hints": "How would you handle message ordering and duplicate notifications?"
+  },
+  {
+    "company": "Generic",
+    "role": "ai_engineer",
+    "seniority": "mid",
+    "category": "behavioral",
+    "difficulty": 3,
+    "question_text": "Tell me about a time when you had to adapt an AI system to a new domain or set of requirements. How did you approach the adaptation, and what challenges did you face?",
+    "rubric": "Describes a specific scenario of domain adaptation; explains steps taken (e.g., data collection, feature engineering, model tuning); discusses challenges such as data scarcity or domain mismatch; demonstrates problem-solving and flexibility; reflects on results and lessons learned.",
+    "follow_up_hints": "What techniques did you use to improve the system's performance in the new domain?"
+  },
+  {
+    "company": "Microsoft",
+    "role": "ai_engineer",
+    "seniority": "senior",
+    "category": "technical",
+    "difficulty": 5,
+    "question_text": "Discuss the key challenges in deploying large-scale transformer-based language models for real-time applications. How would you address issues related to latency, cost, and model updates?",
+    "rubric": "1. Addresses model compression or distillation techniques\n2. Considers hardware acceleration and infrastructure\n3. Balances latency and accuracy trade-offs\n4. Implements efficient model serving architectures\n5. Manages model versioning and updates seamlessly\n6. Considers cost optimization and resource management",
+    "follow_up_hints": "What strategies would you use to reduce inference latency?"
+  },
+  {
+    "company": "Generic",
+    "role": "backend_engineer",
+    "seniority": "mid",
+    "category": "technical",
+    "difficulty": 4,
+    "question_text": "Design a backend service that processes user sign-up requests, ensuring idempotency so that duplicate requests do not create multiple accounts. What strategies would you implement to achieve this?",
+    "rubric": "Implements idempotency keys or request deduplication; Uses reliable storage to track processed requests; Handles race conditions; Ensures data consistency; Addresses failure scenarios and retries",
+    "follow_up_hints": "How would you prevent duplicate account creation in distributed systems?"
+  },
+  {
+    "company": "Generic",
+    "role": "ai_engineer",
+    "seniority": "mid",
+    "category": "technical",
+    "difficulty": 4,
+    "question_text": "You are deploying an AI model for real-time content moderation on a social media platform. What architecture would you design to handle high throughput, low latency, and model updates?",
+    "rubric": "Describe components such as data ingestion, feature extraction, model inference, and feedback loop; Address latency requirements and model serving infrastructure; Explain how to handle model updates without downtime; Discuss monitoring model performance and drift; Consider scalability and fault tolerance; Address data privacy and compliance issues.",
+    "follow_up_hints": "How would you handle false positives and model bias?"
+  },
+  {
+    "company": "Microsoft",
+    "role": "software_engineer",
+    "seniority": "mid",
+    "category": "coding",
+    "difficulty": 3,
+    "question_text": "Write a function that takes a list of strings and returns a new list with each string reversed. Explain your implementation choice and how it performs with large inputs.",
+    "rubric": "Reverses each string accurately\nUses an efficient method such as slicing or in-place reversal\nHandles edge cases like empty strings or non-string elements\nExplains the time complexity as O(n * m), where n is the number of strings and m is the max string length\nConsiders memory usage implications for large inputs",
+    "follow_up_hints": "Would your approach change if strings were extremely long or if memory was constrained?"
+  },
+  {
+    "company": "Generic",
+    "role": "ai_engineer",
+    "seniority": "junior",
+    "category": "technical",
+    "difficulty": 2,
+    "question_text": "You are tasked with integrating a third-party AI API into an existing application. What considerations should you keep in mind regarding error handling, rate limits, and data privacy?",
+    "rubric": "Mentions handling API errors and retries; Considers rate limiting and backoff strategies; Addresses data privacy and security; Explains fallback mechanisms; Checks API documentation for constraints; Ensures user experience is maintained during failures.",
+    "follow_up_hints": "What would you do if the API response times are inconsistent?"
+  },
+  {
+    "company": "Generic",
+    "role": "software_engineer",
+    "seniority": "junior",
+    "category": "coding",
+    "difficulty": 2,
+    "question_text": "Write a function that takes a list of strings and returns a new list containing only the strings that start with a vowel. Assume the input list is non-empty.",
+    "rubric": "Correctly identifies strings starting with vowels\nHandles case sensitivity\nUses efficient iteration\nMaintains original order\nIncludes appropriate input validation\nOutputs the filtered list accurately",
+    "follow_up_hints": "How would your solution change if the list could be very large?"
+  },
+  {
+    "company": "Generic",
+    "role": "ai_engineer",
+    "seniority": "senior",
+    "category": "system_design",
+    "difficulty": 5,
+    "question_text": "Design an end-to-end system for deploying a large language model that supports real-time question answering for millions of users globally. Address scalability, latency, model updates, and fault tolerance.",
+    "rubric": "Architecture design including model hosting, load balancing, and caching; Use of autoscaling and distributed serving; Techniques for reducing latency such as model quantization or distillation; Handling model updates with minimal downtime; Monitoring system health and performance; Fault tolerance strategies.",
+    "follow_up_hints": "How would you ensure the model remains up-to-date without service interruptions?"
+  },
+  {
+    "company": "Generic",
+    "role": "software_engineer",
+    "seniority": "mid",
+    "category": "system_design",
+    "difficulty": 3,
+    "question_text": "Design an API rate limiting system that can enforce per-user and global request limits in a distributed environment. What strategies would you use to ensure fairness and scalability?",
+    "rubric": "Describes token bucket or leaky bucket algorithms\nConsiders distributed counters using Redis, Cassandra, or similar\nAddresses issues like clock skew and synchronization\nIncludes strategies for handling burst traffic and maintaining fairness\nDiscusses scalability considerations and potential bottlenecks\nAddresses monitoring and alerting for limit breaches",
+    "follow_up_hints": "How would you handle rate limit exceptions in your API?"
+  },
+  {
+    "company": "Generic",
+    "role": "ai_engineer",
+    "seniority": "senior",
+    "category": "behavioral",
+    "difficulty": 4,
+    "question_text": "Tell me about a time when you had to make a difficult technical decision regarding an AI system. How did you evaluate options and what was the outcome?",
+    "rubric": "A strong answer should include a specific scenario involving a significant trade-off (e.g., accuracy vs. latency, interpretability vs. performance). The candidate should describe their decision-making process, including evaluation criteria, data considerations, and stakeholder input. The outcome should reflect a thoughtful approach and lessons learned.",
+    "follow_up_hints": "What alternatives did you consider, and why did you choose the final approach?"
+  },
+  {
+    "company": "Google",
+    "role": "software_engineer",
+    "seniority": "mid",
+    "category": "behavioral",
+    "difficulty": 2,
+    "question_text": "Describe a time when you had to adapt quickly to a significant change in a project or team. How did you handle it, and what was the outcome?",
+    "rubric": "A strong answer should include a specific example of a change, demonstrate the candidate's adaptability and problem-solving mindset, and reflect on lessons learned. Look for evidence of flexibility, communication, and resilience. The candidate should articulate how they adjusted their plans or approach to meet new requirements or constraints.",
+    "follow_up_hints": "Can you walk me through the specific steps you took to adapt?"
+  },
+  {
+    "company": "Generic",
+    "role": "data_engineer",
+    "seniority": "mid",
+    "category": "behavioral",
+    "difficulty": 3,
+    "question_text": "Describe a time when you had to redesign a data pipeline to handle increasing data volume. What challenges did you face and how did you address them?",
+    "rubric": "Identifies specific bottlenecks or scalability issues\nProposes concrete redesign strategies or architectural changes\nAddresses data quality and consistency concerns\nConsiders operational complexity and cost\nDemonstrates understanding of data pipeline components and their scaling\nReflects on lessons learned and future improvements",
+    "follow_up_hints": "How did you measure the success of your redesign?"
+  },
+  {
+    "company": "Meta",
+    "role": "backend_engineer",
+    "seniority": "junior",
+    "category": "behavioral",
+    "difficulty": 1,
+    "question_text": "Tell me about a time when you had to work with a team to solve a difficult technical problem. How did you contribute, and what was the outcome?",
+    "rubric": "Describes the specific problem and their role in solving it; Demonstrates teamwork and communication skills; Explains how they contributed to the solution; Reflects on what they learned from the experience.",
+    "follow_up_hints": "What was your specific role in the team effort?"
+  },
+  {
+    "company": "Amazon",
+    "role": "data_engineer",
+    "seniority": "mid",
+    "category": "technical",
+    "difficulty": 3,
+    "question_text": "Design a batch processing pipeline to aggregate daily sales data from multiple regional databases into a centralized data warehouse. What steps would you include, and how would you handle late-arriving data?",
+    "rubric": "Defines clear data ingestion and transformation steps; Addresses data consistency and deduplication; Explains handling of late or missing data; Considers scalability and fault tolerance; Discusses data validation and monitoring.",
+    "follow_up_hints": "How would you modify the pipeline to support real-time updates?"
+  },
+  {
+    "company": "Google",
+    "role": "software_engineer",
+    "seniority": "mid",
+    "category": "technical",
+    "difficulty": 3,
+    "question_text": "Design a system for real-time processing of user activity data to generate personalized content recommendations. What components would you include, and how would they interact?",
+    "rubric": "Defines data ingestion and streaming components; Implements real-time feature extraction; Uses scalable storage and retrieval; Ensures low latency; Addresses privacy and data security.",
+    "follow_up_hints": "How would you handle data volume spikes?"
+  },
+  {
+    "company": "Generic",
+    "role": "data_engineer",
+    "seniority": "mid",
+    "category": "system_design",
+    "difficulty": 3,
+    "question_text": "Design a data architecture for a real-time analytics dashboard that aggregates user activity data from multiple sources across different regions. What components would you include, and how would you ensure data consistency and low latency?",
+    "rubric": "Includes data ingestion components such as Kafka or Kinesis; Uses data processing frameworks like Spark or Flink; Addresses data storage solutions; Considers data consistency models; Discusses latency optimization strategies.",
+    "follow_up_hints": "How would you handle late-arriving data or data quality issues?"
+  },
+  {
+    "company": "Amazon",
+    "role": "data_engineer",
+    "seniority": "senior",
+    "category": "system_design",
+    "difficulty": 5,
+    "question_text": "Design a scalable data architecture for a global e-commerce platform that provides real-time analytics on sales, inventory, and user behavior. Include data ingestion, storage, processing, and visualization components, and discuss how to handle data consistency and latency.",
+    "rubric": "A strong answer covers data pipelines for ingesting data from multiple regions, data lakes or warehouses for storage, real-time processing frameworks, and dashboards or APIs for visualization. The design should address data latency, consistency models, fault tolerance, and scalability. Trade-offs between batch and streaming processing should be discussed.",
+    "follow_up_hints": "How would you ensure data privacy and security across different regions?"
+  },
+  {
+    "company": "Generic",
+    "role": "data_engineer",
+    "seniority": "mid",
+    "category": "behavioral",
+    "difficulty": 3,
+    "question_text": "Tell me about a time when you had to optimize a slow-running data query or job. What steps did you take, and what was the outcome?",
+    "rubric": "Describes specific optimization steps (indexing, query rewriting, partitioning); demonstrates understanding of data systems; discusses performance metrics before and after; reflects on lessons learned.",
+    "follow_up_hints": "Did you consider data sharding or caching as part of your optimization?"
+  }
+]

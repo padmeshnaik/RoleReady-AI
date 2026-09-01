@@ -1,6 +1,7 @@
 """RAG helpers: embeddings, Pinecone store, hybrid retriever."""
 
 from roleready.rag.embeddings import EmbeddingClient, embedding_text
+from roleready.rag.ingest import ingest_questions
 from roleready.rag.pinecone_store import PineconeQuestionStore, question_metadata
 from roleready.rag.retriever import RetrievalService, build_query_text
 
@@ -10,5 +11,6 @@ __all__ = [
     "RetrievalService",
     "build_query_text",
     "embedding_text",
+    "ingest_questions",
     "question_metadata",
 ]

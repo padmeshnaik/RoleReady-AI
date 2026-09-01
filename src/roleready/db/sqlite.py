@@ -5,9 +5,11 @@ from __future__ import annotations
 import csv
 import sqlite3
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 
 from roleready.db.models import GENERIC_COMPANY, MAX_DIFFICULTY, MIN_DIFFICULTY, Question
+from roleready.generation.validate import load_jsonl_records, validate_record
 
 CREATE_QUESTIONS_TABLE_SQL = f"""
 CREATE TABLE IF NOT EXISTS questions (
@@ -38,6 +40,21 @@ INSERT OR REPLACE INTO questions (
     question_text, rubric, follow_up_hints
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 """
+
+INSERT_QUESTION_IF_ABSENT_SQL = """
+INSERT OR IGNORE INTO questions (
+    id, company, role, seniority, category, difficulty,
+    question_text, rubric, follow_up_hints
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+"""
+
+
+@dataclass(frozen=True)
+class SeedSummary:
+    records_read: int
+    inserted: int
+    skipped: int
+    failed: int
 
 
 def connect(db_path: str | Path) -> sqlite3.Connection:
@@ -217,6 +234,81 @@ def load_questions_from_csv(csv_path: str | Path) -> list[Question]:
 def seed_from_csv(conn: sqlite3.Connection, csv_path: str | Path) -> int:
     create_tables(conn)
     return insert_questions(conn, load_questions_from_csv(csv_path))
+
+
+def seed_from_jsonl(conn: sqlite3.Connection, jsonl_path: str | Path) -> SeedSummary:
+    """Validate cleaned JSONL and insert new question IDs only. Safe to rerun."""
+    path = Path(jsonl_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Question seed JSONL not found: {path}")
+
+    create_tables(conn)
+    records = load_jsonl_records(path)
+    existing_ids = {
+        str(row["id"]) for row in conn.execute("SELECT id FROM questions;").fetchall()
+    }
+    seen_ids: set[str] = set()
+    inserted = 0
+    skipped = 0
+    failed = 0
+
+    for _line_number, payload in records:
+        if isinstance(payload, dict) and payload.get("_parse_error"):
+            failed += 1
+            continue
+        reasons = validate_record(payload, seen_ids=set())
+        if reasons or not isinstance(payload, dict):
+            failed += 1
+            continue
+        try:
+            question = _question_from_jsonl_payload(payload)
+        except (KeyError, TypeError, ValueError):
+            failed += 1
+            continue
+        if question.id in existing_ids or question.id in seen_ids:
+            skipped += 1
+            continue
+        cursor = conn.execute(INSERT_QUESTION_IF_ABSENT_SQL, _question_to_row(question))
+        if cursor.rowcount == 1:
+            inserted += 1
+            existing_ids.add(question.id)
+            seen_ids.add(question.id)
+        else:
+            skipped += 1
+            seen_ids.add(question.id)
+
+    conn.commit()
+    return SeedSummary(
+        records_read=len(records),
+        inserted=inserted,
+        skipped=skipped,
+        failed=failed,
+    )
+
+
+def format_seed_summary(summary: SeedSummary) -> str:
+    return (
+        f"records read: {summary.records_read}\n"
+        f"inserted: {summary.inserted}\n"
+        f"skipped: {summary.skipped}\n"
+        f"failed: {summary.failed}"
+    )
+
+
+def _question_from_jsonl_payload(payload: dict) -> Question:
+    hints = payload.get("follow_up_hints")
+    hint_text = hints.strip() if isinstance(hints, str) else None
+    return Question(
+        id=str(payload["id"]).strip(),
+        company=str(payload["company"]).strip(),
+        role=str(payload["role"]).strip(),
+        seniority=str(payload["seniority"]).strip(),
+        category=str(payload["category"]).strip(),
+        difficulty=int(payload["difficulty"]),
+        question_text=str(payload["question_text"]).strip(),
+        rubric=str(payload["rubric"]).strip(),
+        follow_up_hints=hint_text or None,
+    )
 
 
 def _filter(conn: sqlite3.Connection, column: str, value: str) -> list[Question]:

@@ -35,7 +35,7 @@ python scripts/init_db.py
 python scripts/ingest_pinecone.py
 ```
 
-`init_db.py` does not call OpenAI or Pinecone. Ingest embeds the question bank and upserts vectors.
+`init_db.py` loads `data/questions_clean.jsonl` into SQLite and does not call OpenAI or Pinecone. It skips existing question IDs, so it is safe to rerun. `ingest_pinecone.py` embeds `question_text` plus `rubric` from SQLite and upserts vectors keyed by question id, so reruns overwrite instead of duplicating. SQLite remains the source of truth for full question and rubric text.
 
 ## Run the app
 

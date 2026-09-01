@@ -4,6 +4,7 @@ import pytest
 
 from roleready.config.settings import Settings
 from roleready.rag.embeddings import EmbeddingClient, embedding_text
+from roleready.rag.ingest import ingest_questions
 from roleready.rag.pinecone_store import PineconeQuestionStore, question_metadata
 from tests.fakes import make_question
 
@@ -106,3 +107,83 @@ def test_ensure_index_rejects_mismatched_vectors_on_existing_index() -> None:
     )
     with pytest.raises(ValueError, match="1024"):
         store.ensure_index(1536)
+
+
+class _RecordingEmbeddings:
+    def __init__(self) -> None:
+        self.batches: list[list[str]] = []
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        self.batches.append(list(texts))
+        return [[float(index), 0.1] for index, _text in enumerate(texts)]
+
+    def embed_query(self, text: str) -> list[float]:
+        return [0.0, 0.1]
+
+
+def test_ingest_questions_batches_and_upserts_sqlite_ids() -> None:
+    questions = [
+        make_question(
+            f"gq-{index:04d}",
+            question_text=f"Question text {index} that is long enough.",
+            rubric=f"Rubric text {index} covering the expected answer.",
+            company="Google",
+            role="backend_engineer",
+            seniority="senior",
+            category="system_design",
+            difficulty=4,
+        )
+        for index in range(1, 6)
+    ]
+    embeddings = _RecordingEmbeddings()
+    embedder = EmbeddingClient(settings=_settings(), embeddings=embeddings)
+    index = _FakeIndex()
+    store = PineconeQuestionStore(settings=_settings(), client=_FakePinecone(), index=index)
+    logs: list[str] = []
+
+    count = ingest_questions(
+        questions,
+        embedder,
+        store,
+        batch_size=2,
+        progress=logs.append,
+    )
+
+    assert count == 5
+    assert [len(batch) for batch in embeddings.batches] == [2, 2, 1]
+    flattened = [item for batch in embeddings.batches for item in batch]
+    for question, text in zip(questions, flattened, strict=True):
+        assert text == embedding_text(question)
+        assert question.question_text in text
+        assert question.rubric in text
+
+    upserted_ids = [row["id"] for batch in index.upserts for row in batch]
+    assert upserted_ids == [question.id for question in questions]
+    first_meta = index.upserts[0][0]["metadata"]
+    assert first_meta == {
+        "question_id": "gq-0001",
+        "company": "Google",
+        "role": "backend_engineer",
+        "seniority": "senior",
+        "category": "system_design",
+        "difficulty": 4,
+    }
+    joined = "\n".join(logs)
+    assert "Progress 5/5" in joined
+    assert "Done. Upserted 5 vectors" in joined
+    assert "test-openai" not in joined
+    assert "test-pinecone" not in joined
+
+
+def test_ingest_questions_rerun_uses_same_vector_ids() -> None:
+    question = make_question("gq-0009")
+    embeddings = _RecordingEmbeddings()
+    embedder = EmbeddingClient(settings=_settings(), embeddings=embeddings)
+    index = _FakeIndex()
+    store = PineconeQuestionStore(settings=_settings(), client=_FakePinecone(), index=index)
+
+    ingest_questions([question], embedder, store, batch_size=10)
+    ingest_questions([question], embedder, store, batch_size=10)
+
+    assert [row["id"] for row in index.upserts[0]] == ["gq-0009"]
+    assert [row["id"] for row in index.upserts[1]] == ["gq-0009"]

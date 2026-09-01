@@ -12,6 +12,7 @@ _ENV_NAMES = {
     "openai_api_key": "OPENAI_API_KEY",
     "openai_model_interviewer": "OPENAI_MODEL_INTERVIEWER",
     "openai_model_scorer": "OPENAI_MODEL_SCORER",
+    "openai_model_question_generator": "OPENAI_MODEL_QUESTION_GENERATOR",
     "openai_embedding_model": "OPENAI_EMBEDDING_MODEL",
     "openai_embedding_dimensions": "OPENAI_EMBEDDING_DIMENSIONS",
     "pinecone_api_key": "PINECONE_API_KEY",
@@ -49,6 +50,10 @@ class Settings(BaseSettings):
     openai_api_key: str
     openai_model_interviewer: str = "gpt-4o-mini"
     openai_model_scorer: str = "gpt-4o-mini"
+    openai_model_question_generator: str | None = Field(
+        default=None,
+        description="Model id for the offline question-generation pipeline. Set via OPENAI_MODEL_QUESTION_GENERATOR.",
+    )
     openai_embedding_model: str = "text-embedding-3-small"
     openai_embedding_dimensions: int | None = Field(
         default=None,
@@ -74,6 +79,14 @@ class Settings(BaseSettings):
                 "Do not commit secrets."
             )
         return value.strip()
+
+    @field_validator("openai_model_question_generator", mode="after")
+    @classmethod
+    def blank_question_generator_is_unset(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        stripped = value.strip()
+        return stripped or None
 
 
 @lru_cache

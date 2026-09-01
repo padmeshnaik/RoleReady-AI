@@ -119,8 +119,7 @@ class PineconeQuestionStore:
             ]
             index.upsert(vectors=records)
             total += len(records)
-            ids = ", ".join(q.id for q in batch_questions)
-            log(f"Upserted {total}/{len(questions)} vectors (ids: {ids})")
+            log(f"Upserted {total}/{len(questions)} vectors")
         return total
 
     def query_matches(

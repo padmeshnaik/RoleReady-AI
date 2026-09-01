@@ -1,4 +1,4 @@
-"""Load SQLite questions into Pinecone. Re-running upserts the same question IDs.
+"""Load every SQLite question into Pinecone. Re-running upserts the same IDs.
 
     python scripts/ingest_pinecone.py
 """
@@ -16,7 +16,8 @@ if str(SRC) not in sys.path:
 
 from roleready.config.settings import get_settings  # noqa: E402
 from roleready.db.sqlite import connect, list_questions  # noqa: E402
-from roleready.rag.embeddings import EmbeddingClient, embedding_text  # noqa: E402
+from roleready.rag.embeddings import EmbeddingClient  # noqa: E402
+from roleready.rag.ingest import DEFAULT_INGEST_BATCH_SIZE, ingest_questions  # noqa: E402
 from roleready.rag.pinecone_store import PineconeQuestionStore  # noqa: E402
 
 
@@ -27,7 +28,12 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="SQLite path (default: SQLITE_PATH from settings)",
     )
-    parser.add_argument("--batch-size", type=int, default=32, help="Embed/upsert batch size")
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=DEFAULT_INGEST_BATCH_SIZE,
+        help=f"Embed/upsert batch size (default: {DEFAULT_INGEST_BATCH_SIZE})",
+    )
     return parser.parse_args()
 
 
@@ -76,25 +82,14 @@ def main() -> None:
         print(f"Embedding output dimension: {embedder.dimension()}")
     store.ensure_index(embedder.dimension(), progress=print)
 
-    texts = [embedding_text(question) for question in questions]
-    vectors: list[list[float]] = []
-    batch_size = max(1, args.batch_size)
-    for start in range(0, len(texts), batch_size):
-        chunk = texts[start : start + batch_size]
-        ids = [q.id for q in questions[start : start + batch_size]]
-        print(f"Embedding {start + 1}-{start + len(chunk)}/{len(texts)} (ids: {', '.join(ids)})")
-        vectors.extend(embedder.embed_texts(chunk))
-
-    count = store.upsert_vectors(
+    count = ingest_questions(
         questions,
-        vectors,
-        batch_size=batch_size,
+        embedder,
+        store,
+        batch_size=max(1, args.batch_size),
         progress=print,
     )
-    print(
-        f"Done. Upserted {count} vectors. IDs match SQLite question ids, "
-        "so re-running this script overwrites vectors instead of duplicating them."
-    )
+    print(f"Final count: {count}")
 
 
 if __name__ == "__main__":
