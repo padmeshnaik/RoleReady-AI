@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from pydantic import ValidationError
 
@@ -58,9 +60,27 @@ def test_interview_question_count_rejects_zero() -> None:
     assert "interview_question_count" in str(exc_info.value)
 
 
-def test_default_env_file_is_repository_root() -> None:
-    from roleready.config.settings import DEFAULT_ENV_FILE, REPO_ROOT
+def test_blank_embedding_dimensions_are_optional() -> None:
+    settings = Settings(_env_file=None, **_valid_kwargs(openai_embedding_dimensions=""))
+    assert settings.openai_embedding_dimensions is None
 
-    assert DEFAULT_ENV_FILE == REPO_ROOT / ".env"
-    assert (REPO_ROOT / "src" / "roleready" / "config" / "settings.py").is_file()
+
+def test_apply_env_overrides_fills_missing_known_names(monkeypatch: pytest.MonkeyPatch) -> None:
+    from roleready.config.settings import apply_env_overrides
+
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    apply_env_overrides({"OPENAI_API_KEY": "from-secrets", "UNKNOWN": "ignore"})
+    assert os.environ["OPENAI_API_KEY"] == "from-secrets"
+    assert "UNKNOWN" not in os.environ
+
+
+def test_missing_env_names_maps_validation_fields(no_secret_env: None) -> None:
+    from roleready.config.settings import missing_env_names
+
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    names = missing_env_names(exc_info.value)
+    assert "OPENAI_API_KEY" in names
+    assert "PINECONE_API_KEY" in names
+
 

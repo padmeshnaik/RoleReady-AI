@@ -2,13 +2,16 @@
 
 Secrets are never hardcoded. Copy .env.example to .env and set required values.
 The .env path is the repository root so Streamlit still finds it when the
-working directory is the app file folder.
+working directory is the app file folder. Streamlit Cloud should set the same
+names in App settings → Secrets (there is no .env on Cloud).
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, ValidationInfo, field_validator
+from dotenv import load_dotenv
+from pydantic import Field, ValidationError, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # src/roleready/config/settings.py -> repository root
@@ -87,6 +90,15 @@ class Settings(BaseSettings):
             )
         return value.strip()
 
+    @field_validator("openai_embedding_dimensions", mode="before")
+    @classmethod
+    def blank_embedding_dimensions_is_unset(cls, value: object) -> object:
+        if value is None:
+            return None
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
     @field_validator("openai_model_question_generator", mode="after")
     @classmethod
     def blank_question_generator_is_unset(cls, value: str | None) -> str | None:
@@ -96,10 +108,41 @@ class Settings(BaseSettings):
         return stripped or None
 
 
+def apply_env_overrides(values: dict[str, str]) -> None:
+    """Copy known config names into the process environment if they are not already set."""
+    known = set(_ENV_NAMES.values())
+    for key, value in values.items():
+        if key not in known:
+            continue
+        text = str(value).strip()
+        if not text:
+            continue
+        existing = os.environ.get(key, "").strip()
+        if existing:
+            continue
+        os.environ[key] = text
+
+
+def missing_env_names(exc: ValidationError) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+    for error in exc.errors():
+        loc = error.get("loc") or ()
+        if not loc:
+            continue
+        field = str(loc[0])
+        env_name = _ENV_NAMES.get(field, field)
+        if env_name not in seen:
+            seen.add(env_name)
+            names.append(env_name)
+    return names
+
+
 @lru_cache
 def get_settings() -> Settings:
     """Load settings once from the environment / .env file."""
-    return Settings()
+    load_dotenv(DEFAULT_ENV_FILE, encoding="utf-8", override=False)
+    return Settings(_env_file=DEFAULT_ENV_FILE if DEFAULT_ENV_FILE.exists() else None)
 
 
 def clear_settings_cache() -> None:

@@ -13,6 +13,9 @@ if str(SRC) not in sys.path:
 
 import streamlit as st
 
+from pydantic import ValidationError
+from roleready.config.settings import apply_env_overrides, clear_settings_cache, missing_env_names
+from roleready.db.sqlite import connect, seed_from_jsonl
 from roleready.llm.scorer import ScoringError
 from roleready.orchestration import InterviewApp
 from roleready.rag.retriever import RetrievalError
@@ -42,14 +45,68 @@ def _public_error(exc: BaseException, fallback: str) -> str:
     return fallback
 
 
+def _streamlit_secrets_env() -> dict[str, str]:
+    values: dict[str, str] = {}
+    try:
+        secrets = st.secrets
+    except Exception:
+        return values
+    try:
+        keys = list(secrets.keys())
+    except Exception:
+        return values
+    for key in keys:
+        try:
+            raw = secrets[key]
+        except Exception:
+            continue
+        if isinstance(raw, (str, int, float)):
+            values[str(key)] = str(raw)
+    return values
+
+
+def _ensure_question_bank(app: InterviewApp) -> None:
+    jsonl = REPO_ROOT / "data" / "questions_clean.jsonl"
+    if not jsonl.exists():
+        return
+    try:
+        existing = app.list_bank_questions()
+    except Exception:
+        existing = []
+    if existing:
+        return
+    conn = connect(app.db_path)
+    try:
+        seed_from_jsonl(conn, jsonl)
+    finally:
+        conn.close()
+
+
 def _ensure_app() -> InterviewApp | None:
     if "app" in st.session_state:
         return st.session_state.app
+    apply_env_overrides(_streamlit_secrets_env())
+    clear_settings_cache()
     try:
         app = InterviewApp.from_settings(project_root=REPO_ROOT, live=False)
+        _ensure_question_bank(app)
+    except ValidationError as exc:
+        logger.exception("Could not load RoleReady AI settings.")
+        missing = missing_env_names(exc)
+        detail = f" Missing: {', '.join(missing)}." if missing else ""
+        st.error(
+            "Could not start RoleReady AI. "
+            "On Streamlit Cloud, set these names in App settings → Secrets "
+            "(GitHub does not include your local `.env`)."
+            + detail
+        )
+        return None
     except Exception:
         logger.exception("Could not load RoleReady AI settings.")
-        st.error("Could not start RoleReady AI. Check that `.env` is set and SQLite is seeded.")
+        st.error(
+            "Could not start RoleReady AI. "
+            "Check Streamlit secrets (or local `.env`) and that SQLite is seeded."
+        )
         return None
     st.session_state.app = app
     return app
